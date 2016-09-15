@@ -23,12 +23,7 @@ case "$1" in
 	fi
 	mount $MMCDEV $MNTPOINT
 	
-	if [ -f /etc/$SOME_SCRIPT ]; then
-	    echo "    Launching /etc/$SOME_SCRIPT"
-	    /etc/$SOME_SCRIPT
-	else
-	    echo "    $SOME_SCRIPT not found. Nothing to launch."
-	fi
+	/etc/$SOME_SCRIPT
 	;;
   stop)
 	echo -n "Stopping $DESC: "
