@@ -21,6 +21,7 @@ install:
 	$(INSTALL) $(OWN) -m $(INSTMODE) $(SCRIPT1).tmp $(SYSCONFDIR)/$(SCRIPT1)
 	rm $(SCRIPT1).tmp
 
+	#INITSTRING default is defined in local.conf, weak default - meta-core/init/init.bb
 	sed -e 's/init_elphel393.sh/$(INITSTRING)/' $(SCRIPT2) > $(SCRIPT2).tmp
 	$(INSTALL) $(OWN) -d $(INITDIR)
 	$(INSTALL) $(OWN) -m $(INSTMODE) $(SCRIPT2).tmp $(INITDIR)/$(SCRIPT2)
