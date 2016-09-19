@@ -94,9 +94,11 @@ def init_sata(sata_en,pydir):
         chout("modprobe ahci_elphel &")
         chout("sleep 2")
         chout("echo 1 > /sys/devices/soc0/amba@0/80000000.elphel-ahci/load_module")
-    
-#main
 
+
+
+
+#main
 #argv[1] - port mask, overrides device tree records
 if len(sys.argv) > 1:
     mask = sys.argv[1]
