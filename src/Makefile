@@ -9,7 +9,7 @@ OWN = -o root -g root
 INSTALL = install
 INSTMODE   = 0755
 
-SCRIPT1=init_elphel393.sh
+SCRIPT1=init_elphel393.py
 SCRIPT2=init_elphel393
 
 all:
@@ -25,7 +25,7 @@ install:
 	rm $(SCRIPT1).tmp
 
 	#INITSTRING default is defined in local.conf, weak default - meta-core/init/init.bb
-	sed -e 's/init_elphel393.sh/$(INITSTRING)/' $(SCRIPT2) > $(SCRIPT2).tmp
+	sed -e 's/init_elphel393.py/$(INITSTRING)/' $(SCRIPT2) > $(SCRIPT2).tmp
 	$(INSTALL) $(OWN) -d $(INITDIR)
 	$(INSTALL) $(OWN) -m $(INSTMODE) $(SCRIPT2).tmp $(INITDIR)/$(SCRIPT2)
 	rm $(SCRIPT2).tmp

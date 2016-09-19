@@ -7,7 +7,7 @@ DESC="extra init scripts"
 
 MNTPOINT=/mnt/mmc
 MMCDEV=/dev/mmcblk0p1
-SOME_SCRIPT=init_elphel393.sh
+SOME_SCRIPT=init_elphel393.py
 CONFDIR=/etc/elphel393
 
 case "$1" in
