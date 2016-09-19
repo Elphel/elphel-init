@@ -32,18 +32,8 @@ __maintainer__ = "Oleg K Dzhimiev"
 __email__ = "oleg@elphel.com"
 __status__ = "Development"
 
-import argparse
-from argparse import RawTextHelpFormatter
-
 import subprocess
-
-parser = argparse.ArgumentParser(
-    prog="init_elphel393.py",
-    description="init script",
-    usage="./init_elphel393.py or python init_elphel393.py",
-    formatter_class=RawTextHelpFormatter
-    )
-args = parser.parse_args()
+import sys
 
 #params
 SENSOR_TYPE = 5
@@ -73,14 +63,30 @@ def init_imgsrv(port):
     chout("killall lighttpd; /usr/sbin/lighttpd -f /etc/lighttpd.conf")
     chout("/www/pages/exif.php init=/etc/Exif_template.xml")
 
-def init_autoexp_autowb(index):
+def init_autoexp_autowb(index,mask):
     
-    #mt9p006
+    if (mask==0x1):
+        sysfs_content = ""
+        # read sysfs, overwrite if argv?!  
+        with open("/sys/devices/soc0/elphel393-detect_sensors@0/sensor"+index+"0", 'r') as content_file:
+            sysfs_content = content_file.read()
+            sysfs_content = sysfs_content.strip()
     
-    chout("wget -O /dev/null \"localhost/framepars.php?sensor_port="+str(index)+"&cmd=init\"")
-    chout("autoexposure -p "+str(index)+" -c 0 -b 0 -d 1 &")
-    chout("wget -O /dev/null \"localhost/parsedit.php?immediate&sensor_port="+str(index)+"&COMPRESSOR_RUN=2&DAEMON_EN=1*12&AUTOEXP_ON=1&AEXP_FRACPIX=0xff80&AEXP_LEVEL=0xf800&AE_PERIOD=4&AE_THRESH=500&HIST_DIM_01=0x0a000a00&HIST_DIM_23=0x0a000a00&EXP_AHEAD=3\"")
-    chout("wget -O /dev/null \"localhost/parsedit.php?immediate&sensor_port="+str(index)+"&COMPRESSOR_RUN=2&DAEMON_EN=1&WB_EN=0x1&WB_MASK=0xd&WB_PERIOD=16&WB_WHITELEV=0xfae1&WB_WHITEFRAC=0x028f&WB_SCALE_R=0x10000&WB_SCALE_GB=0x10000&WB_SCALE_B=0x10000&WB_THRESH=500&GAIN_MIN=0x18000&GAIN_MAX=0xfc000&ANA_GAIN_ENABLE=1&GAINR=0x10000&GAING=0x10000&GAINGB=0x10000&GAINB=0x10000\"")
+        #Sensor list
+        #1. mt9p006
+        #2. mt9f002
+        #3. ...
+        if (sysfs_content=="mt9p006"):
+            print("Port "+index+": enabling auto exposure and auto white balance")
+            chout("wget -O /dev/null \"localhost/framepars.php?sensor_port="+index+"&cmd=init\"")
+            chout("autoexposure -p "+index+" -c 0 -b 0 -d 1 &")
+            chout("wget -O /dev/null \"localhost/parsedit.php?immediate&sensor_port="+index+"&COMPRESSOR_RUN=2&DAEMON_EN=1*12&AUTOEXP_ON=1&AEXP_FRACPIX=0xff80&AEXP_LEVEL=0xf800&AE_PERIOD=4&AE_THRESH=500&HIST_DIM_01=0x0a000a00&HIST_DIM_23=0x0a000a00&EXP_AHEAD=3\"")
+            chout("wget -O /dev/null \"localhost/parsedit.php?immediate&sensor_port="+index+"&COMPRESSOR_RUN=2&DAEMON_EN=1&WB_EN=0x1&WB_MASK=0xd&WB_PERIOD=16&WB_WHITELEV=0xfae1&WB_WHITEFRAC=0x028f&WB_SCALE_R=0x10000&WB_SCALE_GB=0x10000&WB_SCALE_B=0x10000&WB_THRESH=500&GAIN_MIN=0x18000&GAIN_MAX=0xfc000&ANA_GAIN_ENABLE=1&GAINR=0x10000&GAING=0x10000&GAINGB=0x10000&GAINB=0x10000\"")
+        else:
+            print("Port "+index+": disabled, please check the Device Tree")
+            
+    else:
+        print("Port "+index+": disabled in init_elphel393")
 
 def init_sata(sata_en,pydir):
     if (sata_en==1):
@@ -90,20 +96,29 @@ def init_sata(sata_en,pydir):
         chout("echo 1 > /sys/devices/soc0/amba@0/80000000.elphel-ahci/load_module")
     
 #main
+
+#argv[1] - port mask, overrides device tree records
+if len(sys.argv) > 1:
+    mask = sys.argv[1]
+else:
+    mask = 0xf
+
+mask = int(str(mask), 16)
+
 #1
-print("Checkpoint 1: IP = "+IPADDR)
+print(sys.argv[0]+": ip = "+IPADDR)
 init_ipaddr(IPADDR)
 #2
-print("Checkpoint 2: mcntrl")
+print(sys.argv[0]+": mcntrl")
 init_mcntrl(PYDIR,VERILOG_DIR)
 #3
-print("Checkpoint 3: imgsrv")
+print(sys.argv[0]+": imgsrv")
 init_imgsrv(IMGSRV_PORT)
 #4
-print("Checkpoint 4: autoexposure and auto white balance")
+print(sys.argv[0]+": autoexposure and auto white balance")
 for i in range(4):
-    init_autoexp_autowb(i)
+    init_autoexp_autowb(str(i),(mask>>i)&0x1)
     
 #5
-print("Checkpoint 5: SATA")
+print("SATA")
 init_sata(SATA_EN,PYDIR)

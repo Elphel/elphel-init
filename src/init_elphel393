@@ -7,8 +7,8 @@ DESC="extra init scripts"
 
 MNTPOINT=/mnt/mmc
 MMCDEV=/dev/mmcblk0p1
-SOME_SCRIPT=init_elphel393.py
 CONFDIR=/etc/elphel393
+SOME_SCRIPT= $CONFDIR/init_elphel393.py
 
 case "$1" in
   start)
@@ -24,7 +24,7 @@ case "$1" in
 	fi
 	mount $MMCDEV $MNTPOINT
 	
-	$CONFDIR/$SOME_SCRIPT
+	$SOME_SCRIPT
 	;;
   stop)
 	echo -n "Stopping $DESC: "
