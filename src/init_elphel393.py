@@ -107,6 +107,9 @@ else:
 
 mask = int(str(mask), 16)
 
+# create directory for camogm pipes, symlink /var/state should already be in rootfs 
+chout("mkdir /var/volatile/state")
+
 #1
 print(sys.argv[0]+": ip = "+IPADDR)
 init_ipaddr(IPADDR)
