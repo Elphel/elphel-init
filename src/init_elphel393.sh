@@ -26,6 +26,7 @@ imgsrv -p 2323
 killall lighttpd; /usr/sbin/lighttpd -f /etc/lighttpd.conf
 /www/pages/exif.php init=/etc/Exif_template.xml
 
+exit 0
 echo "init sensor port"
 
 wget -O /dev/null "localhost/framepars.php?sensor_port=0&cmd=init"
