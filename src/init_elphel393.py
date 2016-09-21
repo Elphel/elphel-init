@@ -34,6 +34,7 @@ __status__ = "Development"
 
 import subprocess
 import sys
+import time
 
 #params
 SENSOR_TYPE = 5
@@ -47,80 +48,127 @@ PYDIR = "/usr/local/bin"
 VERILOG_DIR = "/usr/local/verilog"
 
 #functions
-def chout(cmd):
+def shout(cmd):
     #subprocess.call prints to console
     subprocess.call(cmd,shell=True)
 
 def init_ipaddr(ip):
-    chout("ifconfig eth0 "+ip)
+    shout("ifconfig eth0 "+ip)
     
 def init_mcntrl(pydir,verilogdir):
-    chout(pydir+"/test_mcntrl.py @"+verilogdir+"/hargs")
+    shout(pydir+"/test_mcntrl.py @"+verilogdir+"/hargs")
 
 def init_imgsrv(port):
-    chout("imgsrv -p "+str(port))
+    shout("imgsrv -p "+str(port))
     #restart PHP - it can get errors while opening/mmaping at startup, then some functions fail
-    chout("killall lighttpd; /usr/sbin/lighttpd -f /etc/lighttpd.conf")
-    chout("/www/pages/exif.php init=/etc/Exif_template.xml")
+    shout("killall lighttpd; /usr/sbin/lighttpd -f /etc/lighttpd.conf")
+    shout("/www/pages/exif.php init=/etc/Exif_template.xml")
 
-def init_autoexp_autowb(index,mask):
+def init_port(index):
+    print("Port "+index+": framepars enable")
+    shout("wget -O /dev/null \"localhost/framepars.php?sensor_port="+index+"&cmd=init\"")        
+
+def init_autoexp(index):
+    shout("autoexposure -p "+index+" -c 0 -b 0 -d 1 &")
+    shout("wget -O /dev/null \"localhost/parsedit.php?immediate&sensor_port="+index+"&COMPRESSOR_RUN=2&DAEMON_EN=1*12&AUTOEXP_ON=1&AEXP_FRACPIX=0xff80&AEXP_LEVEL=0xf800&AE_PERIOD=4&AE_THRESH=500&HIST_DIM_01=0x0a000a00&HIST_DIM_23=0x0a000a00&EXP_AHEAD=3\"")
+
+def init_autowb(index):
+    shout("wget -O /dev/null \"localhost/parsedit.php?immediate&sensor_port="+index+"&COMPRESSOR_RUN=2&DAEMON_EN=1&WB_EN=0x1&WB_MASK=0xd&WB_PERIOD=16&WB_WHITELEV=0xfae1&WB_WHITEFRAC=0x028f&WB_SCALE_R=0x10000&WB_SCALE_GB=0x10000&WB_SCALE_B=0x10000&WB_THRESH=500&GAIN_MIN=0x18000&GAIN_MAX=0xfc000&ANA_GAIN_ENABLE=1&GAINR=0x10000&GAING=0x10000&GAINGB=0x10000&GAINB=0x10000\"")
+
+def init_sata(sata_en,pydir):
+    if (sata_en==1):
+        shout(pydir+"/x393sata.py")
+        shout("modprobe ahci_elphel &")
+        shout("sleep 2")
+        shout("echo 1 > /sys/devices/soc0/amba@0/80000000.elphel-ahci/load_module")
+
+
+
+#main
+
+# default
+switch = {
+    'ip':1,
+    'mcntrl':1,
+    'imgsrv':1,
+    'port1':1,
+    'port2':1,
+    'port3':1,
+    'port4':1,
+    'framepars':1,
+    'autoexp':1,
+    'autowb':1,
+    'sata':1
+    }
+
+# update from argv
+if len(sys.argv) > 1:
+    switch.update(eval(sys.argv[1]))
+
+#1
+if switch['ip']==1:
+    print(sys.argv[0]+": ip = "+IPADDR)
+    init_ipaddr(IPADDR)
+else:
+    print("skip ip")
     
-    if (mask==0x1):
+#2
+if switch['mcntrl']==1:
+    print(sys.argv[0]+": mcntrl")
+    init_mcntrl(PYDIR,VERILOG_DIR)
+else:
+    print("skip mcntrl")
+    
+#3
+if switch['imgsrv']==1:
+    print(sys.argv[0]+": imgsrv")
+    init_imgsrv(IMGSRV_PORT)
+else:
+    print("skip imgsrv")
+    
+#4
+print(sys.argv[0]+": init ports")
+for i in range(1,5):        
+    if switch['port'+str(i)]==1:
+        index = str(i-1)
         sysfs_content = ""
         # read sysfs, overwrite if argv?!  
         with open("/sys/devices/soc0/elphel393-detect_sensors@0/sensor"+index+"0", 'r') as content_file:
             sysfs_content = content_file.read()
             sysfs_content = sysfs_content.strip()
-    
+        
         #Sensor list
         #1. mt9p006
         #2. mt9f002
         #3. ...
         if (sysfs_content=="mt9p006"):
-            print("Port "+index+": enabling auto exposure and auto white balance")
-            chout("wget -O /dev/null \"localhost/framepars.php?sensor_port="+index+"&cmd=init\"")
-            chout("autoexposure -p "+index+" -c 0 -b 0 -d 1 &")
-            chout("wget -O /dev/null \"localhost/parsedit.php?immediate&sensor_port="+index+"&COMPRESSOR_RUN=2&DAEMON_EN=1*12&AUTOEXP_ON=1&AEXP_FRACPIX=0xff80&AEXP_LEVEL=0xf800&AE_PERIOD=4&AE_THRESH=500&HIST_DIM_01=0x0a000a00&HIST_DIM_23=0x0a000a00&EXP_AHEAD=3\"")
-            chout("wget -O /dev/null \"localhost/parsedit.php?immediate&sensor_port="+index+"&COMPRESSOR_RUN=2&DAEMON_EN=1&WB_EN=0x1&WB_MASK=0xd&WB_PERIOD=16&WB_WHITELEV=0xfae1&WB_WHITEFRAC=0x028f&WB_SCALE_R=0x10000&WB_SCALE_GB=0x10000&WB_SCALE_B=0x10000&WB_THRESH=500&GAIN_MIN=0x18000&GAIN_MAX=0xfc000&ANA_GAIN_ENABLE=1&GAINR=0x10000&GAING=0x10000&GAINGB=0x10000&GAINB=0x10000\"")
+            init_port(index)
         else:
-            print("Port "+index+": disabled, please check the Device Tree")
-            
+            switch['port'+str(i)] = 0
+            print("Sensor port "+str(i)+": disabled, please check device tree")
     else:
-        print("Port "+index+": disabled in init_elphel393")
+        print("skip sensor port "+str(i))
 
-def init_sata(sata_en,pydir):
-    if (sata_en==1):
-        chout(pydir+"/x393sata.py")
-        chout("modprobe ahci_elphel &")
-        chout("sleep 2")
-        chout("echo 1 > /sys/devices/soc0/amba@0/80000000.elphel-ahci/load_module")
+time.sleep(1)
 
-
-
-
-#main
-#argv[1] - port mask, overrides device tree records
-if len(sys.argv) > 1:
-    mask = sys.argv[1]
-else:
-    mask = 0xf
-
-mask = int(str(mask), 16)
-
-#1
-print(sys.argv[0]+": ip = "+IPADDR)
-init_ipaddr(IPADDR)
-#2
-print(sys.argv[0]+": mcntrl")
-init_mcntrl(PYDIR,VERILOG_DIR)
-#3
-print(sys.argv[0]+": imgsrv")
-init_imgsrv(IMGSRV_PORT)
-#4
-print(sys.argv[0]+": autoexposure and auto white balance")
-for i in range(4):
-    init_autoexp_autowb(str(i),(mask>>i)&0x1)
-    
 #5
-print("SATA")
-init_sata(SATA_EN,PYDIR)
+print(sys.argv[0]+": auto exposure and auto white balance")
+for i in range(1,5):
+    if switch['port'+str(i)]==1:
+        index = str(i-1)
+        if switch['autoexp']==1:
+            init_autoexp(index)
+        else:
+            print("Port "+str(i)+": skip autoexp")
+            
+        if switch['autowb']==1:
+            init_autowb(index)
+        else:
+            print("Port "+str(i)+": skip autowb")
+
+#6
+print(sys.argv[0]+" SATA")
+if switch['sata']==1:
+    init_sata(SATA_EN,PYDIR)
+else:
+    print("skip SATA")
