@@ -174,4 +174,4 @@ else:
     print("skip SATA")
 
 # create directory for camogm pipes, symlink /var/state should already be in rootfs 
-chout("mkdir /var/volatile/state")
+shout("mkdir /var/volatile/state")
