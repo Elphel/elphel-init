@@ -1,6 +1,8 @@
 #/bin/sh
-#ifconfig eth0 down
-#ifconfig eth0 hw ether 00:0e:64:10:00:02 192.168.0.7
+#Do it early (add DT configuration), it takes ~1 sec to drop voltage to < 1.0V
+echo "0x101" > /sys/devices/soc0/elphel393-pwr@0/gpio_10389 # power on (it is actually already on)
+echo "0x100" > /sys/devices/soc0/elphel393-pwr@0/gpio_10389 # power off
+sleep 1
 
 # select sensor type: 5 Mpx (set 5) or 14 Mpx (set 14)
 # 14MPix does not work with framepars & parsedit!!!
@@ -33,7 +35,7 @@ killall lighttpd; /usr/sbin/lighttpd -f /etc/lighttpd.conf
 /www/pages/exif.php init=/etc/Exif_template.xml
 #echo "TURN 10359 power in the next 10 seconds"
 #sleep 10
-exit 0
+#exit 0
 
 cat /usr/local/verilog/x359.bit > /dev/sfpgaconfjtag0
 cat /usr/local/verilog/x359.bit > /dev/sfpgaconfjtag1
