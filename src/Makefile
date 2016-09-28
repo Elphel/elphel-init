@@ -4,6 +4,10 @@ MODPROBEDIR=$(SYSCONFDIR)/modprobe.d
 DRIVER_NAME=ahci_elphel
 CONFDIR=$(SYSCONFDIR)/elphel393
 
+STATEDIR = $(DESTDIR)/var/volatile/state
+STATELINK = $(DESTDIR)/var/state
+LINK = ln
+
 OWN = -o root -g root
 
 INSTALL = install
@@ -40,6 +44,10 @@ install:
 	# blacklist AHCI driver to prevent it from loading before FPGA is configured
 	$(INSTALL) $(OWN) -d $(MODPROBEDIR)
 	echo "blacklist $(DRIVER_NAME)" >> $(MODPROBEDIR)/blacklist.conf
+	
+	# create directories to support legacy scripts
+	$(INSTALL) $(OWN) -d $(STATEDIR)
+	$(LINK) -s -r $(STATEDIR) $(STATELINK)
 
 clean:
 	@echo "make clean in src"
