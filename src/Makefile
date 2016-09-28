@@ -15,7 +15,8 @@ INSTMODE   = 0755
 
 SCRIPT1=init_elphel393.py
 SCRIPT2=init_elphel393
-SCRIPT3=init_elphel393.sh # used for Eyesis 12-sensors
+ # init_elphel393.sh is used for Eyesis 12-sensors
+SCRIPT3=init_elphel393.sh
 SCRIPT4=init_eyesis_bottom2.sh
 
 all:
