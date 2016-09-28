@@ -15,6 +15,7 @@ INSTMODE   = 0755
 
 SCRIPT1=init_elphel393.py
 SCRIPT2=init_elphel393
+SCRIPT3=init_elphel393.sh
 
 all:
 	@echo "make all in src"
@@ -28,6 +29,12 @@ install:
 	$(INSTALL) $(OWN) -m $(INSTMODE) $(SCRIPT1).tmp $(CONFDIR)/$(SCRIPT1)
 	rm $(SCRIPT1).tmp
 
+	sed -e 's/192.168.0.9/$(REMOTE_IP)/' $(SCRIPT3) > $(SCRIPT3).tmp
+	$(INSTALL) $(OWN) -d $(CONFDIR)
+	$(INSTALL) $(OWN) -m $(INSTMODE) $(SCRIPT3).tmp $(CONFDIR)/$(SCRIPT3)
+	rm $(SCRIPT3).tmp
+	
+	
 	#INITSTRING default is defined in local.conf, weak default - meta-core/init/init.bb
 	sed -e 's/init_elphel393.py/$(INITSTRING)/' $(SCRIPT2) > $(SCRIPT2).tmp
 	$(INSTALL) $(OWN) -d $(INITDIR)
