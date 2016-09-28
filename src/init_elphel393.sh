@@ -25,8 +25,8 @@ VERILOG_DIR=/usr/local/verilog
 #echo "exiting before power on"
 #exit 0;
 
-#$PYDIR/test_mcntrl.py @${VERILOG_DIR}/hargs-eyesis
-$PYDIR/test_mcntrl.py @${VERILOG_DIR}/hargs
+$PYDIR/test_mcntrl.py @${VERILOG_DIR}/hargs-eyesis
+#$PYDIR/test_mcntrl.py @${VERILOG_DIR}/hargs
 
 echo imgsrv -p 2323
 imgsrv -p 2323
@@ -41,7 +41,7 @@ cat /usr/local/verilog/x359.bit > /dev/sfpgaconfjtag0
 cat /usr/local/verilog/x359.bit > /dev/sfpgaconfjtag1
 cat /usr/local/verilog/x359.bit > /dev/sfpgaconfjtag2
 cat /usr/local/verilog/x359.bit > /dev/sfpgaconfjtag3
-exit 0
+#exit 0
 
 
 #wget -O /dev/null "localhost/framepars.php?sensor_port=3&cmd=min_init"
@@ -71,33 +71,6 @@ wget -O /dev/null "localhost/parsedit.php?immediate&sensor_port=3&COMPRESSOR_RUN
 wget -O /dev/null "localhost/parsedit.php?immediate&sensor_port=1&COMPRESSOR_RUN=2&DAEMON_EN=1&WB_EN=0x1&WB_MASK=0xd&WB_PERIOD=16&WB_WHITELEV=0xfae1&WB_WHITEFRAC=0x028f&WB_SCALE_R=0x10000&WB_SCALE_GB=0x10000&WB_SCALE_B=0x10000&WB_THRESH=500&GAIN_MIN=0x18000&GAIN_MAX=0xfc000&ANA_GAIN_ENABLE=1&GAINR=0x10000&GAING=0x10000&GAINGB=0x10000&GAINB=0x10000"
 wget -O /dev/null "localhost/parsedit.php?immediate&sensor_port=0&COMPRESSOR_RUN=2&DAEMON_EN=1&WB_EN=0x1&WB_MASK=0xd&WB_PERIOD=16&WB_WHITELEV=0xfae1&WB_WHITEFRAC=0x028f&WB_SCALE_R=0x10000&WB_SCALE_GB=0x10000&WB_SCALE_B=0x10000&WB_THRESH=500&GAIN_MIN=0x18000&GAIN_MAX=0xfc000&ANA_GAIN_ENABLE=1&GAINR=0x10000&GAING=0x10000&GAINGB=0x10000&GAINB=0x10000"
 
-exit 0
-echo "init sensor port"
-
-wget -O /dev/null "localhost/framepars.php?sensor_port=0&cmd=init"
-wget -O /dev/null "localhost/framepars.php?sensor_port=1&cmd=init"
-wget -O /dev/null "localhost/framepars.php?sensor_port=2&cmd=init"
-wget -O /dev/null "localhost/framepars.php?sensor_port=3&cmd=init"
-
-echo "start autoexposure daemons on each sensor port"
-autoexposure -p 0 -c 0 -b 0 -d 1 &
-autoexposure -p 1 -c 0 -b 0 -d 1 &
-autoexposure -p 2 -c 0 -b 0 -d 1 &
-autoexposure -p 3 -c 0 -b 0 -d 1 &
-
-echo "Set autoexposure parameters and enable autoesposure for each sensor port, delay startup of daemon until enough frames are acquired"
-
-wget -O /dev/null "localhost/parsedit.php?immediate&sensor_port=0&COMPRESSOR_RUN=2&DAEMON_EN=1*12&AUTOEXP_ON=1&AEXP_FRACPIX=0xff80&AEXP_LEVEL=0xf800&AE_PERIOD=4&AE_THRESH=500&HIST_DIM_01=0x0a000a00&HIST_DIM_23=0x0a000a00&EXP_AHEAD=3"
-wget -O /dev/null "localhost/parsedit.php?immediate&sensor_port=1&COMPRESSOR_RUN=2&DAEMON_EN=1*12&AUTOEXP_ON=1&AEXP_FRACPIX=0xff80&AEXP_LEVEL=0xf800&AE_PERIOD=4&AE_THRESH=500&HIST_DIM_01=0x0a000a00&HIST_DIM_23=0x0a000a00&EXP_AHEAD=3"
-wget -O /dev/null "localhost/parsedit.php?immediate&sensor_port=2&COMPRESSOR_RUN=2&DAEMON_EN=1*12&AUTOEXP_ON=1&AEXP_FRACPIX=0xff80&AEXP_LEVEL=0xf800&AE_PERIOD=4&AE_THRESH=500&HIST_DIM_01=0x0a000a00&HIST_DIM_23=0x0a000a00&EXP_AHEAD=3"
-wget -O /dev/null "localhost/parsedit.php?immediate&sensor_port=3&COMPRESSOR_RUN=2&DAEMON_EN=1*12&AUTOEXP_ON=1&AEXP_FRACPIX=0xff80&AEXP_LEVEL=0xf800&AE_PERIOD=4&AE_THRESH=500&HIST_DIM_01=0x0a000a00&HIST_DIM_23=0x0a000a00&EXP_AHEAD=3"
-
-echo "set up white balance parameters"
-
-wget -O /dev/null "localhost/parsedit.php?immediate&sensor_port=0&COMPRESSOR_RUN=2&DAEMON_EN=1&WB_EN=0x1&WB_MASK=0xd&WB_PERIOD=16&WB_WHITELEV=0xfae1&WB_WHITEFRAC=0x028f&WB_SCALE_R=0x10000&WB_SCALE_GB=0x10000&WB_SCALE_B=0x10000&WB_THRESH=500&GAIN_MIN=0x18000&GAIN_MAX=0xfc000&ANA_GAIN_ENABLE=1&GAINR=0x10000&GAING=0x10000&GAINGB=0x10000&GAINB=0x10000"
-wget -O /dev/null "localhost/parsedit.php?immediate&sensor_port=1&COMPRESSOR_RUN=2&DAEMON_EN=1&WB_EN=0x1&WB_MASK=0xd&WB_PERIOD=16&WB_WHITELEV=0xfae1&WB_WHITEFRAC=0x028f&WB_SCALE_R=0x10000&WB_SCALE_GB=0x10000&WB_SCALE_B=0x10000&WB_THRESH=500&GAIN_MIN=0x18000&GAIN_MAX=0xfc000&ANA_GAIN_ENABLE=1&GAINR=0x10000&GAING=0x10000&GAINGB=0x10000&GAINB=0x10000"
-wget -O /dev/null "localhost/parsedit.php?immediate&sensor_port=2&COMPRESSOR_RUN=2&DAEMON_EN=1&WB_EN=0x1&WB_MASK=0xd&WB_PERIOD=16&WB_WHITELEV=0xfae1&WB_WHITEFRAC=0x028f&WB_SCALE_R=0x10000&WB_SCALE_GB=0x10000&WB_SCALE_B=0x10000&WB_THRESH=500&GAIN_MIN=0x18000&GAIN_MAX=0xfc000&ANA_GAIN_ENABLE=1&GAINR=0x10000&GAING=0x10000&GAINGB=0x10000&GAINB=0x10000"
-wget -O /dev/null "localhost/parsedit.php?immediate&sensor_port=3&COMPRESSOR_RUN=2&DAEMON_EN=1&WB_EN=0x1&WB_MASK=0xd&WB_PERIOD=16&WB_WHITELEV=0xfae1&WB_WHITEFRAC=0x028f&WB_SCALE_R=0x10000&WB_SCALE_GB=0x10000&WB_SCALE_B=0x10000&WB_THRESH=500&GAIN_MIN=0x18000&GAIN_MAX=0xfc000&ANA_GAIN_ENABLE=1&GAINR=0x10000&GAING=0x10000&GAINGB=0x10000&GAINB=0x10000"
 
 if [ $SATA_EN -eq 1 ]; then
     $PYDIR/x393sata.py
@@ -105,6 +78,7 @@ if [ $SATA_EN -eq 1 ]; then
     sleep 2
     echo 1 > /sys/devices/soc0/amba@0/80000000.elphel-ahci/load_module
 fi
-
+echo "starting temperature monitor with fan control disabled"
+tempmon.py --control_fan off &
 echo "/etc/init_elphel393.sh done"
 exit 0
