@@ -17,7 +17,9 @@ SCRIPT1=init_elphel393.py
 SCRIPT2=init_elphel393
  # init_elphel393.sh is used for Eyesis 12-sensors
 SCRIPT3=init_elphel393.sh
-SCRIPT4=init_eyesis_bottom2.sh
+
+SCRIPT4=init_eyesis12.sh
+SCRIPT5=init_eyesis_bottom2.sh
 
 all:
 	@echo "make all in src"
@@ -41,6 +43,10 @@ install:
 	$(INSTALL) $(OWN) -m $(INSTMODE) $(SCRIPT4).tmp $(CONFDIR)/$(SCRIPT4)
 	rm $(SCRIPT4).tmp
 	
+	sed -e 's/192.168.0.9/$(REMOTE_IP)/' $(SCRIPT5) > $(SCRIPT5).tmp
+	$(INSTALL) $(OWN) -d $(CONFDIR)
+	$(INSTALL) $(OWN) -m $(INSTMODE) $(SCRIPT5).tmp $(CONFDIR)/$(SCRIPT5)
+	rm $(SCRIPT5).tmp
 	
 	#INITSTRING default is defined in local.conf, weak default - meta-core/init/init.bb
 	sed -e 's/init_elphel393.py/$(INITSTRING)/' $(SCRIPT2) > $(SCRIPT2).tmp
