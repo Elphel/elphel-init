@@ -46,9 +46,15 @@ killall lighttpd; /usr/sbin/lighttpd -f /etc/lighttpd.conf
 
 #wget -O /dev/null "localhost/framepars.php?sensor_port=3&cmd=min_init"
 #wget -O /dev/null "localhost/framepars.php?sensor_port=2&cmd=min_init"
+# Prepare all, but do not switch to triggered mode yet
 #Using same min_init as for multiplexed Eyesis, phase will likely be wrong (correct separately)
 wget -O - "localhost/framepars.php?sensor_port=3&cmd=min_init"
 wget -O - "localhost/framepars.php?sensor_port=2&cmd=min_init"
+#now switch to triggered mode 
+sleep 2
+cat /proc/interrupts
+wget -O - "localhost/framepars.php?sensor_port=2&cmd=eyesis_trig"
+wget -O - "localhost/framepars.php?sensor_port=3&cmd=eyesis_trig"
 
 sleep 2
 cat /proc/interrupts
