@@ -177,4 +177,4 @@ else:
 shout("mkdir /var/volatile/state")
 
 # start temperature monitor and let it control fan (set 'off' to disable fan control)
-shout("tempmon.py --control_fan on")
+shout("tempmon.py --control_fan on &")
