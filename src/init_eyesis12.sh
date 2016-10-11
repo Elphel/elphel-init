@@ -79,6 +79,10 @@ wget -O /dev/null "localhost/parsedit.php?immediate&sensor_port=3&COMPRESSOR_RUN
 wget -O /dev/null "localhost/parsedit.php?immediate&sensor_port=1&COMPRESSOR_RUN=2&DAEMON_EN=1&WB_EN=0x1&WB_MASK=0xd&WB_PERIOD=16&WB_WHITELEV=0xfae1&WB_WHITEFRAC=0x028f&WB_SCALE_R=0x10000&WB_SCALE_GB=0x10000&WB_SCALE_B=0x10000&WB_THRESH=500&GAIN_MIN=0x18000&GAIN_MAX=0xfc000&ANA_GAIN_ENABLE=1&GAINR=0x10000&GAING=0x10000&GAINGB=0x10000&GAINB=0x10000"
 wget -O /dev/null "localhost/parsedit.php?immediate&sensor_port=0&COMPRESSOR_RUN=2&DAEMON_EN=1&WB_EN=0x1&WB_MASK=0xd&WB_PERIOD=16&WB_WHITELEV=0xfae1&WB_WHITEFRAC=0x028f&WB_SCALE_R=0x10000&WB_SCALE_GB=0x10000&WB_SCALE_B=0x10000&WB_THRESH=500&GAIN_MIN=0x18000&GAIN_MAX=0xfc000&ANA_GAIN_ENABLE=1&GAINR=0x10000&GAING=0x10000&GAINGB=0x10000&GAINB=0x10000"
 
+wget -O /dev/null "localhost/parsedit.php?immediate&sensor_port=3&MULTI_FLIPV=4"
+wget -O /dev/null "localhost/parsedit.php?immediate&sensor_port=2&MULTI_FLIPV=3"
+wget -O /dev/null "localhost/parsedit.php?immediate&sensor_port=0&MULTI_FLIPV=4"
+wget -O /dev/null "localhost/parsedit.php?immediate&sensor_port=1&MULTI_FLIPV=3"
 
 if [ $SATA_EN -eq 1 ]; then
     $PYDIR/x393sata.py
