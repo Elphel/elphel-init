@@ -85,5 +85,6 @@ if [ $SATA_EN -eq 1 ]; then
 fi
 echo "starting temperature monitor with fan control disabled"
 tempmon.py --control_fan off &
+mkdir /var/volatile/state
 echo "/etc/init_elphel393.sh done"
 exit 0
