@@ -35,6 +35,7 @@ __status__ = "Development"
 import subprocess
 import sys
 import time
+import os
 
 #params
 SENSOR_TYPE = 5
@@ -82,12 +83,28 @@ def init_sata(sata_en,pydir):
         shout("sleep 2")
         shout("echo 1 > /sys/devices/soc0/amba@0/80000000.elphel-ahci/load_module")
 
-
+def init_usb_hub():
+    """
+    Initializes USB HUB on 10389 board (stays inituialized through reboot, does not respond after initialized)
+    """
+    if not os.path.exists('/sys/bus/usb/devices/1-1'):
+        shout("i2cset -y 0 0x2c 0xff 0x0201 w")
+        shout("i2cset -y 0 0x2c 0xff 0x0001 w")
+        shout("i2cset -y 0 0x2c 0x00 0x3401 w")
+        shout("i2cset -y 0 0x2c 0x01 0x1201 w")
+        shout("i2cset -y 0 0x2c 0x06 0x9b01 w")
+        shout("i2cset -y 0 0x2c 0x07 0x1001 w")
+        shout("i2cset -y 0 0x2c 0x08 0x0001 w")
+        shout("i2cset -y 0 0x2c 0xff 0x0101 w")
+        print ("Initialized USB hub with Vendor=1234")
+    else:
+        print ("USB hub was already initialized")
 
 #main
 
 # default
 switch = {
+    'usb_hub':1,
     'ip':1,
     'mcntrl':1,
     'imgsrv':1,
@@ -104,6 +121,15 @@ switch = {
 # update from argv
 if len(sys.argv) > 1:
     switch.update(eval(sys.argv[1]))
+#pre
+os.mkdir('/var/volatile/html')
+
+#0
+if switch['usb_hub']==1:
+    print('Initialize USB hub')
+    init_usb_hub()
+else:
+    print("skip USB hub initiualization")
 
 #1
 if switch['ip']==1:
