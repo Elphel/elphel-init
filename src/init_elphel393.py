@@ -74,7 +74,7 @@ def init_autoexp(index):
     shout("wget -O /dev/null \"localhost/parsedit.php?immediate&sensor_port="+index+"&COMPRESSOR_RUN=2&DAEMON_EN=1*12&AUTOEXP_ON=1&AEXP_FRACPIX=0xff80&AEXP_LEVEL=0xf800&AE_PERIOD=4&AE_THRESH=500&HIST_DIM_01=0x0a000a00&HIST_DIM_23=0x0a000a00&EXP_AHEAD=3\"")
 
 def init_autowb(index):
-    shout("wget -O /dev/null \"localhost/parsedit.php?immediate&sensor_port="+index+"&COMPRESSOR_RUN=2&DAEMON_EN=1&WB_EN=0x1&WB_MASK=0xd&WB_PERIOD=16&WB_WHITELEV=0xfae1&WB_WHITEFRAC=0x028f&WB_SCALE_R=0x10000&WB_SCALE_GB=0x10000&WB_SCALE_B=0x10000&WB_THRESH=500&GAIN_MIN=0x18000&GAIN_MAX=0xfc000&ANA_GAIN_ENABLE=1&GAINR=0x10000&GAING=0x10000&GAINGB=0x10000&GAINB=0x10000\"")
+    shout("wget -O /dev/null \"localhost/parsedit.php?immediate&sensor_port="+index+"&COMPRESSOR_RUN=2&DAEMON_EN=1&WB_EN=0x1&WB_MASK=0xd&WB_PERIOD=16&WB_WHITELEV=0xfae1&WB_WHITEFRAC=0x028f&WB_SCALE_R=0x10000&WB_SCALE_GB=0x10000&WB_SCALE_B=0x10000&WB_THRESH=500&GAIN_MIN=0x20000&GAIN_MAX=0xfc000&ANA_GAIN_ENABLE=1&GAINR=0x10000&GAING=0x10000&GAINGB=0x10000&GAINB=0x10000\"")
 
 def init_sata(sata_en,pydir):
     if (sata_en==1):
@@ -100,6 +100,13 @@ def init_usb_hub():
     else:
         print ("USB hub was already initialized")
 
+def start_gps_compass():
+    """
+    Detect GPS and/or compass boards and start them
+    """
+    shout("start_gps_compass.php")
+    
+
 #main
 
 # default
@@ -115,7 +122,8 @@ switch = {
     'framepars':1,
     'autoexp':1,
     'autowb':1,
-    'sata':1
+    'sata':1,
+    'gps':1
     }
 
 # update from argv
@@ -198,6 +206,14 @@ if switch['sata']==1:
     init_sata(SATA_EN,PYDIR)
 else:
     print("skip SATA")
+    
+
+#6
+print(sys.argv[0]+" GPS")
+if switch['gps']==1:
+    start_gps_compass()
+else:
+    print("skip GPS")
 
 # create directory for camogm pipes, symlink /var/state should already be in rootfs 
 shout("mkdir /var/volatile/state")
