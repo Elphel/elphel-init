@@ -59,6 +59,9 @@ def init_ipaddr(ip):
 def init_mcntrl(pydir,verilogdir):
     shout(pydir+"/test_mcntrl.py @"+verilogdir+"/hargs")
 
+def init_mcntrl_eyesis(pydir,verilogdir):
+    shout(pydir+"/test_mcntrl.py @"+verilogdir+"/hargs-eyesis")
+
 def init_imgsrv(port):
     shout("imgsrv -p "+str(port))
     #restart PHP - it can get errors while opening/mmaping at startup, then some functions fail
@@ -66,8 +69,32 @@ def init_imgsrv(port):
     shout("/www/pages/exif.php init=/etc/Exif_template.xml")
 
 def init_port(index):
-    print("Port "+index+": framepars enable")
-    shout("wget -O /dev/null \"localhost/framepars.php?sensor_port="+index+"&cmd=init\"")        
+    
+    sysfs_content = init_port_readsysfs("port_mux"+index)
+    if sysfs_content=="mux10359":
+        init_mux10359(index)
+    else:
+        sysfs_content = init_port_readsysfs("sensor"+index+"0")
+        #Sensor list
+        #1. mt9p006
+        #2. mt9f002
+        #3. ...
+        if (sysfs_content=="mt9p006"):
+            print("Port "+index+": framepars enable")
+            shout("wget -O /dev/null \"localhost/framepars.php?sensor_port="+index+"&cmd=init\"")        
+        else:
+            switch['port'+str(i)] = 0
+            print("Sensor port "+str(i)+": disabled, please check device tree")
+
+def init_port_readsysfs(filename):
+    sysfs_content = ""
+    with open("/sys/devices/soc0/elphel393-detect_sensors@0/"+filename, 'r') as content_file:
+        sysfs_content = content_file.read()
+        sysfs_content = sysfs_content.strip()
+    return sysfs_content
+
+def init_mux10359(index):
+    shout("cat /usr/local/verilog/x359.bit > /dev/sfpgaconfjtag"+index)
 
 def init_autoexp(index):
     shout("autoexposure -p "+index+" -c 0 -b 0 -d 1 &")
@@ -75,6 +102,9 @@ def init_autoexp(index):
 
 def init_autowb(index):
     shout("wget -O /dev/null \"localhost/parsedit.php?immediate&sensor_port="+index+"&COMPRESSOR_RUN=2&DAEMON_EN=1&WB_EN=0x1&WB_MASK=0xd&WB_PERIOD=16&WB_WHITELEV=0xfae1&WB_WHITEFRAC=0x028f&WB_SCALE_R=0x10000&WB_SCALE_GB=0x10000&WB_SCALE_B=0x10000&WB_THRESH=500&GAIN_MIN=0x20000&GAIN_MAX=0xfc000&ANA_GAIN_ENABLE=1&GAINR=0x10000&GAING=0x10000&GAINGB=0x10000&GAINB=0x10000\"")
+
+def init_autowb_eyesis(index):
+    shout("wget -O /dev/null \"localhost/parsedit.php?immediate&sensor_port="+index+"&COMPRESSOR_RUN=2&DAEMON_EN=1&WB_EN=0x0&WB_MASK=0xd&WB_PERIOD=16&WB_WHITELEV=0xfae1&WB_WHITEFRAC=0x028f&WB_SCALE_R=0x10000&WB_SCALE_GB=0x10000&WB_SCALE_B=0x10000&WB_THRESH=500&GAIN_MIN=0x20000&GAIN_MAX=0xfc000&ANA_GAIN_ENABLE=1&GAINR=0x1be3e&GAING=0x18000&GAINGB=0x18000&GAINB=0x26667\"")
 
 def init_sata(sata_en,pydir):
     if (sata_en==1):
@@ -123,7 +153,8 @@ switch = {
     'autoexp':1,
     'autowb':1,
     'sata':1,
-    'gps':1
+    'gps':1,
+    'eyesis':0
     }
 
 # update from argv
@@ -149,56 +180,71 @@ else:
 #2
 if switch['mcntrl']==1:
     print(sys.argv[0]+": mcntrl")
-    init_mcntrl(PYDIR,VERILOG_DIR)
+    if switch['eyesis']!=0:
+        init_mcntrl_eyesis(PYDIR,VERILOG_DIR)
+    else:
+        init_mcntrl(PYDIR,VERILOG_DIR)
 else:
     print("skip mcntrl")
-    
+
 #3
 if switch['imgsrv']==1:
     print(sys.argv[0]+": imgsrv")
     init_imgsrv(IMGSRV_PORT)
 else:
     print("skip imgsrv")
-    
+
 #4
 print(sys.argv[0]+": init ports")
 for i in range(1,5):        
     if switch['port'+str(i)]==1:
-        index = str(i-1)
-        sysfs_content = ""
-        # read sysfs, overwrite if argv?!  
-        with open("/sys/devices/soc0/elphel393-detect_sensors@0/sensor"+index+"0", 'r') as content_file:
-            sysfs_content = content_file.read()
-            sysfs_content = sysfs_content.strip()
-        
-        #Sensor list
-        #1. mt9p006
-        #2. mt9f002
-        #3. ...
-        if (sysfs_content=="mt9p006"):
-            init_port(index)
-        else:
-            switch['port'+str(i)] = 0
-            print("Sensor port "+str(i)+": disabled, please check device tree")
+        init_port(str(i-1))
     else:
         print("skip sensor port "+str(i))
 
 time.sleep(1)
 
 #5
-print(sys.argv[0]+": auto exposure and auto white balance")
-for i in range(1,5):
-    if switch['port'+str(i)]==1:
-        index = str(i-1)
-        if switch['autoexp']==1:
-            init_autoexp(index)
-        else:
-            print("Port "+str(i)+": skip autoexp")
-            
-        if switch['autowb']==1:
-            init_autowb(index)
-        else:
-            print("Port "+str(i)+": skip autowb")
+if switch['eyesis']!=0:
+    for i in range(4):
+        sysfs_content = init_port_readsysfs("sensor"+str(i)+"0")
+        if sysfs_content=="mt9p006":
+            shout("wget -O - \"localhost/framepars.php?sensor_port="+str(i)+"&cmd=min_init\"")
+    time.sleep(2)
+    
+    for i in range(4):
+        sysfs_content = init_port_readsysfs("sensor"+str(i)+"0")
+        if sysfs_content=="mt9p006":
+            shout("wget -O - \"localhost/framepars.php?sensor_port="+str(i)+"&cmd=eyesis_trig\"")
+    time.sleep(2)
+    
+else:
+    print(sys.argv[0]+": auto exposure and auto white balance")
+    for i in range(1,5):
+        if switch['port'+str(i)]==1:
+            if switch['autoexp']==1:
+                sysfs_content = init_port_readsysfs("sensor"+str(i)+"0")
+                if sysfs_content=="mt9p006":
+                    init_autoexp(str(i-1))
+            else:
+                print("Port "+str(i)+": skip autoexp")
+                
+            if switch['autowb']==1:
+                sysfs_content = init_port_readsysfs("sensor"+str(i)+"0")
+                if sysfs_content=="mt9p006":
+                    if switch['eyesis']!=0:
+                        init_autowb_eyesis(str(i-1))
+                    else:
+                        init_autowb(str(i-1))
+            else:
+                print("Port "+str(i)+": skip autowb")
+
+#flips for eyesis head cams
+if switch['eyesis']==1:
+    shout("wget -O /dev/null \"localhost/parsedit.php?immediate&sensor_port=3&MULTI_FLIPV=4\"")
+    shout("wget -O /dev/null \"localhost/parsedit.php?immediate&sensor_port=2&MULTI_FLIPV=3\"")
+    shout("wget -O /dev/null \"localhost/parsedit.php?immediate&sensor_port=0&MULTI_FLIPV=4\"")
+    shout("wget -O /dev/null \"localhost/parsedit.php?immediate&sensor_port=1&MULTI_FLIPV=3\"")
 
 #6
 print(sys.argv[0]+" SATA")
@@ -208,7 +254,7 @@ else:
     print("skip SATA")
     
 
-#6
+#7
 print(sys.argv[0]+" GPS")
 if switch['gps']==1:
     start_gps_compass()
