@@ -223,14 +223,14 @@ else:
     for i in range(1,5):
         if switch['port'+str(i)]==1:
             if switch['autoexp']==1:
-                sysfs_content = init_port_readsysfs("sensor"+str(i)+"0")
+                sysfs_content = init_port_readsysfs("sensor"+str(i-1)+"0")
                 if sysfs_content=="mt9p006":
                     init_autoexp(str(i-1))
             else:
                 print("Port "+str(i)+": skip autoexp")
                 
             if switch['autowb']==1:
-                sysfs_content = init_port_readsysfs("sensor"+str(i)+"0")
+                sysfs_content = init_port_readsysfs("sensor"+str(i-1)+"0")
                 if sysfs_content=="mt9p006":
                     if switch['eyesis']!=0:
                         init_autowb_eyesis(str(i-1))
