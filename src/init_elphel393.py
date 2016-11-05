@@ -136,6 +136,11 @@ def start_gps_compass():
     """
     shout("start_gps_compass.php")
     
+def disable_gpio_10389():
+    gpio_10389 = "/sys/devices/soc0/elphel393-pwr@0/gpio_10389"
+    shout("echo '0x101' > "+gpio_10389) #power on
+    shout("echo '0x100' > "+gpio_10389) #power off
+    time.sleep(1)
 
 #main
 
@@ -162,6 +167,11 @@ if len(sys.argv) > 1:
     switch.update(eval(sys.argv[1]))
 #pre
 os.mkdir('/var/volatile/html')
+
+#need to disable fan for eyesis
+if switch['eyesis']!=0:
+    print('Eyesis mode: turn off gpio 10389')
+    disable_gpio_10389()
 
 #0
 if switch['usb_hub']==1:
@@ -211,12 +221,14 @@ if switch['eyesis']!=0:
         if sysfs_content=="mt9p006":
             shout("wget -O - \"localhost/framepars.php?sensor_port="+str(i)+"&cmd=min_init\"")
     time.sleep(2)
+    shout("/proc/interrupts")
     
     for i in range(4):
         sysfs_content = init_port_readsysfs("sensor"+str(i)+"0")
         if sysfs_content=="mt9p006":
             shout("wget -O - \"localhost/framepars.php?sensor_port="+str(i)+"&cmd=eyesis_trig\"")
     time.sleep(2)
+    shout("/proc/interrupts")
     
 else:
     print(sys.argv[0]+": auto exposure and auto white balance")
@@ -265,4 +277,11 @@ else:
 shout("mkdir /var/volatile/state")
 
 # start temperature monitor and let it control fan (set 'off' to disable fan control)
-shout("tempmon.py --control_fan on &")
+if switch['eyesis']!=0:
+    print("Eyesis: fan off")
+    shout("tempmon.py --control_fan off &")
+else:
+    print("Fan on")
+    shout("tempmon.py --control_fan on &")
+    
+print("init_elphel393.py DONE")
