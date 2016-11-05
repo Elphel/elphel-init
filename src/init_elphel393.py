@@ -221,14 +221,14 @@ if switch['eyesis']!=0:
         if sysfs_content=="mt9p006":
             shout("wget -O - \"localhost/framepars.php?sensor_port="+str(i)+"&cmd=min_init\"")
     time.sleep(2)
-    shout("/proc/interrupts")
+    shout("cat /proc/interrupts")
     
     for i in range(4):
         sysfs_content = init_port_readsysfs("sensor"+str(i)+"0")
         if sysfs_content=="mt9p006":
             shout("wget -O - \"localhost/framepars.php?sensor_port="+str(i)+"&cmd=eyesis_trig\"")
     time.sleep(2)
-    shout("/proc/interrupts")
+    shout("cat /proc/interrupts")
     
 else:
     print(sys.argv[0]+": auto exposure and auto white balance")
