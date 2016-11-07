@@ -96,8 +96,9 @@ def init_port_readsysfs(filename):
 def init_mux10359(index):
     shout("cat /usr/local/verilog/x359.bit > /dev/sfpgaconfjtag"+index)
 
-def init_autoexp(index):
+def init_autoexp_daemon(index):
     shout("autoexposure -p "+index+" -c 0 -b 0 -d 1 &")
+def init_autoexp(index):
     shout("wget -O /dev/null \"localhost/parsedit.php?immediate&sensor_port="+index+"&COMPRESSOR_RUN=2&DAEMON_EN=1*12&AUTOEXP_ON=1&AEXP_FRACPIX=0xff80&AEXP_LEVEL=0xf800&AE_PERIOD=4&AE_THRESH=500&HIST_DIM_01=0x0a000a00&HIST_DIM_23=0x0a000a00&EXP_AHEAD=3\"")
 
 def init_autowb(index):
@@ -150,6 +151,7 @@ switch = {
     'port3':1,
     'port4':1,
     'framepars':1,
+    'autoexp_daemon':0,
     'autoexp':1,
     'autowb':1,
     'sata':1,
@@ -221,6 +223,8 @@ if switch['eyesis']!=0:
 else:
     print(sys.argv[0]+": auto exposure and auto white balance")
     for i in range(1,5):
+        if (switch['autoexp_daemon']==1) or (switch['autoexp']==1):
+            init_autoexp_daemon(str(i-1))
         if switch['port'+str(i)]==1:
             if switch['autoexp']==1:
                 sysfs_content = init_port_readsysfs("sensor"+str(i-1)+"0")
