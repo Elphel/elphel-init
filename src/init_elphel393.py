@@ -39,7 +39,7 @@ import os
 
 #params
 SENSOR_TYPE = 5
-IPADDR = "192.168.0.9"
+IPADDR = "192.168.0.161"
 IMGSRV_PORT = 2323
 CAMOGM_PORT = 3456
 CAMOGM_PIPE = "/var/volatile/camogm_cmd"
@@ -101,11 +101,20 @@ def init_autoexp_daemon(index):
 def init_autoexp(index):
     shout("wget -O /dev/null \"localhost/parsedit.php?immediate&sensor_port="+index+"&COMPRESSOR_RUN=2&DAEMON_EN=1*12&AUTOEXP_ON=1&AEXP_FRACPIX=0xff80&AEXP_LEVEL=0xf800&AE_PERIOD=4&AE_THRESH=500&HIST_DIM_01=0x0a000a00&HIST_DIM_23=0x0a000a00&EXP_AHEAD=3\"")
 
+def init_autoexp_eyesis(index):
+    shout("autoexposure -p "+index+" -c 0 -b 0 -d 1 &")
+    roi = "HISTWND_RWIDTH=0xc000&HISTWND_RHEIGHT=0xffff&HISTWND_RLEFT=0xffff&HISTWND_RTOP=0x8000"
+    shout("wget -O /dev/null \"localhost/parsedit.php?immediate&sensor_port="+index+"&COMPRESSOR_RUN=2&DAEMON_EN=1*12&AUTOEXP_ON=1&AEXP_FRACPIX=0xff80&AEXP_LEVEL=0xf800&AUTOEXP_EXP_MAX=5000&AE_PERIOD=4&AE_THRESH=500&HIST_DIM_01=0x0a000a00&HIST_DIM_23=0x0a000a00&EXP_AHEAD=1&"+roi+"\"")
+
 def init_autowb(index):
     shout("wget -O /dev/null \"localhost/parsedit.php?immediate&sensor_port="+index+"&COMPRESSOR_RUN=2&DAEMON_EN=1&WB_EN=0x1&WB_MASK=0xd&WB_PERIOD=16&WB_WHITELEV=0xfae1&WB_WHITEFRAC=0x028f&WB_SCALE_R=0x10000&WB_SCALE_GB=0x10000&WB_SCALE_B=0x10000&WB_THRESH=500&GAIN_MIN=0x20000&GAIN_MAX=0xfc000&ANA_GAIN_ENABLE=1&GAINR=0x10000&GAING=0x10000&GAINGB=0x10000&GAINB=0x10000\"")
 
 def init_autowb_eyesis(index):
     shout("wget -O /dev/null \"localhost/parsedit.php?immediate&sensor_port="+index+"&COMPRESSOR_RUN=2&DAEMON_EN=1&WB_EN=0x0&WB_MASK=0xd&WB_PERIOD=16&WB_WHITELEV=0xfae1&WB_WHITEFRAC=0x028f&WB_SCALE_R=0x10000&WB_SCALE_GB=0x10000&WB_SCALE_B=0x10000&WB_THRESH=500&GAIN_MIN=0x20000&GAIN_MAX=0xfc000&ANA_GAIN_ENABLE=1&GAINR=0x1be3e&GAING=0x18000&GAINGB=0x18000&GAINB=0x26667\"")
+
+def init_other_eyesis(index):
+    shout("wget -O /dev/null \"localhost/camogm_interface.php?cmd=set_parameter&sensor_port="+index+"&pname=QUALITY&pvalue=97\"")
+    shout("wget -O /dev/null \"localhost/camogm_interface.php?cmd=set_parameter&sensor_port="+index+"&pname=COLOR&pvalue=5\"")
 
 def init_sata(sata_en,pydir):
     if (sata_en==1):
@@ -232,6 +241,15 @@ if switch['eyesis']!=0:
     time.sleep(2)
     shout("cat /proc/interrupts")
     
+    for i in range(4):
+        sysfs_content = init_port_readsysfs("sensor"+str(i)+"0")
+        if sysfs_content=="mt9p006":
+            print("AUTOEXP und AUTOWB, channel = "+str(i))
+            init_other_eyesis(str(i))
+            time.sleep(1)
+            init_autoexp_eyesis(str(i))
+            init_autowb_eyesis(str(i))
+    
 else:
     print(sys.argv[0]+": auto exposure and auto white balance")
     for i in range(1,5):
@@ -248,9 +266,6 @@ else:
             if switch['autowb']==1:
                 sysfs_content = init_port_readsysfs("sensor"+str(i-1)+"0")
                 if sysfs_content=="mt9p006":
-                    if switch['eyesis']!=0:
-                        init_autowb_eyesis(str(i-1))
-                    else:
                         init_autowb(str(i-1))
             else:
                 print("Port "+str(i)+": skip autowb")
