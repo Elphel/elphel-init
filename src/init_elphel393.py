@@ -39,7 +39,7 @@ import os
 
 #params
 SENSOR_TYPE = 5
-IPADDR = "192.168.0.161"
+IPADDR = "192.168.0.9"
 IMGSRV_PORT = 2323
 CAMOGM_PORT = 3456
 CAMOGM_PIPE = "/var/volatile/camogm_cmd"
@@ -166,6 +166,7 @@ switch = {
     'port4':1,
     'framepars':1,
     'autoexp_daemon':0,
+    'autocampars':0,
     'autoexp':1,
     'autowb':1,
     'sata':1,
@@ -269,7 +270,9 @@ else:
                         init_autowb(str(i-1))
             else:
                 print("Port "+str(i)+": skip autowb")
-
+if switch ['autocampars'] == 1:
+    shout("autocampars.php --init --ignore-revision")
+    
 #flips for eyesis head cams
 if switch['eyesis']==1:
     shout("wget -O /dev/null \"localhost/parsedit.php?immediate&sensor_port=3&MULTI_FLIPV=4\"")
