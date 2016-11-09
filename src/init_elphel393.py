@@ -271,7 +271,8 @@ else:
             else:
                 print("Port "+str(i)+": skip autowb")
 if switch ['autocampars'] == 1:
-    shout("autocampars.php --init --ignore-revision")
+#   shout("autocampars.php --init --ignore-revision")
+    shout("autocampars.php --init")
     
 #flips for eyesis head cams
 if switch['eyesis']==1:
@@ -295,8 +296,12 @@ if switch['gps']==1:
 else:
     print("skip GPS")
 
-# create directory for camogm pipes, symlink /var/state should already be in rootfs 
-shout("mkdir /var/volatile/state")
+# create directory for camogm pipes, symlink /var/state should already be in rootfs
+
+if not os.path.exists("/var/volatile/state"):
+    os.mkdir('/var/volatile/state')
+else:
+    print ("/var/volatile/state already exists")
 
 # start temperature monitor and let it control fan (set 'off' to disable fan control)
 if switch['eyesis']!=0:
