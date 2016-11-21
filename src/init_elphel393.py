@@ -178,7 +178,9 @@ switch = {
 if len(sys.argv) > 1:
     switch.update(eval(sys.argv[1]))
 #pre
-os.mkdir('/var/volatile/html')
+volatile_html = '/var/volatile/html'
+if not os.path.exists(volatile_html):
+    os.mkdir(volatile_html)
 
 #need to disable fan for eyesis
 if switch['eyesis']!=0:
@@ -227,7 +229,7 @@ for i in range(1,5):
 time.sleep(1)
 
 #5
-if switch['eyesis']!=0:
+if (switch['eyesis'] != 0) and (switch['framepars'] != 0):
     for i in range(4):
         sysfs_content = init_port_readsysfs("sensor"+str(i)+"0")
         if sysfs_content=="mt9p006":
@@ -275,7 +277,7 @@ if switch ['autocampars'] == 1:
     shout("autocampars.php --init")
     
 #flips for eyesis head cams
-if switch['eyesis']==1:
+if (switch['eyesis'] == 1) and (switch['framepars'] != 0):
     shout("wget -O /dev/null \"localhost/parsedit.php?immediate&sensor_port=3&MULTI_FLIPV=4\"")
     shout("wget -O /dev/null \"localhost/parsedit.php?immediate&sensor_port=2&MULTI_FLIPV=3\"")
     shout("wget -O /dev/null \"localhost/parsedit.php?immediate&sensor_port=0&MULTI_FLIPV=4\"")
