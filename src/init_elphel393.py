@@ -50,7 +50,28 @@ SATA_EN = 1
 PYDIR = "/usr/local/bin"
 VERILOG_DIR = "/usr/local/verilog"
 LOGFILE = "/var/log/init_elphel393.log"
+FPGA_VERION_FILE = '/sys/devices/soc0/elphel393-framepars@0/fpga_version'
+TIMEOUT = 120
+
 #functions
+def get_fpga():
+    with open(FPGA_VERION_FILE,'r') as f:
+        try:
+            return f.read()
+        except:
+            return None
+    
+def fpga_OK(timeout):
+    ntry = 0
+    fpga = None
+    while not fpga and ((not timeout) or (ntry<timeout)):
+        fpga= get_fpga()
+        print ('.',end='')
+        sys.stdout.flush()
+        ntry += 1
+        time.sleep(1)
+    return fpga        
+    
 def colorize(string, color, bold):
     color=color.upper()
     attr = []
@@ -151,6 +172,14 @@ def init_other_eyesis(index):
 
 def init_sata(sata_en,pydir):
     if (sata_en==1):
+        if not get_fpga():
+            log_msg ("Waiting for the FPGA to be programmed to start SATA")
+            if not fpga_OK(TIMEOUT):
+                print()
+                log_msg ("Timeout while waiting for the FPGA to be programmed")
+                return
+            else:
+                print (" Done")
         shout(pydir+"/x393sata.py")
         shout("modprobe ahci_elphel &")
         shout("sleep 2")
@@ -177,6 +206,15 @@ def start_gps_compass():
     """
     Detect GPS and/or compass boards and start them
     """
+    if not get_fpga():
+        log_msg ("Waiting for the FPGA to be programmed to start SATA")
+        if not fpga_OK(TIMEOUT):
+            print()
+            log_msg ("Timeout while waiting for the FPGA to be programmed")
+            return
+        else:
+            print (" Done")
+    
     shout("start_gps_compass.php")
     
 def disable_gpio_10389():
@@ -344,6 +382,7 @@ if switch['gps']==1:
     start_gps_compass()
 else:
     log_msg("skip GPS")
+
 
 # create directory for camogm pipes, symlink /var/state should already be in rootfs
 
