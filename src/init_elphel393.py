@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+from __future__ import division
+from __future__ import print_function
 '''
 # Copyright (C) 2016, Elphel.inc.
 # Usage: known
@@ -47,8 +49,39 @@ SATA_EN = 1
 
 PYDIR = "/usr/local/bin"
 VERILOG_DIR = "/usr/local/verilog"
-
+LOGFILE = "/var/log/init_elphel393.log"
 #functions
+def colorize(string, color, bold):
+    color=color.upper()
+    attr = []
+    if color == 'RED':
+        attr.append('31')
+    elif color == 'GREEN':    
+        attr.append('32')
+    elif color == 'YELLOW':    
+        attr.append('33')
+    elif color == 'BLUE':    
+        attr.append('34')
+    elif color == 'MAGENTA':    
+        attr.append('35')
+    elif color == 'CYAN':    
+        attr.append('36')
+    elif color == 'GRAY':    
+        attr.append('37')
+    else:
+        pass
+        # red
+    if bold:
+        attr.append('1')
+    return '\x1b[%sm%s\x1b[0m' % (';'.join(attr), string)
+
+def log_msg(msg):
+    with open ('/proc/uptime') as f: 
+        t=float(f.read().split()[0])
+    with open(LOGFILE,'a') as msg_file:
+        print (colorize("[%8.2f] %s: "%(t, sys.argv[0].split('/')[-1].split('.')[0]),'CYAN',0)+msg)
+        print("[%8.2f]  %s"%(t,msg),file=msg_file)
+
 def shout(cmd):
     #subprocess.call prints to console
     subprocess.call(cmd,shell=True)
@@ -80,11 +113,11 @@ def init_port(index):
         #2. mt9f002
         #3. ...
         if (sysfs_content=="mt9p006"):
-            print("Port "+index+": framepars enable")
+            log_msg("Port "+index+": framepars enable")
             shout("wget -O /dev/null \"localhost/framepars.php?sensor_port="+index+"&cmd=init\"")        
         else:
             switch['port'+str(i)] = 0
-            print("Sensor port "+str(i)+": disabled, please check device tree")
+            log_msg("Sensor port "+str(i)+": disabled, please check device tree")
 
 def init_port_readsysfs(filename):
     sysfs_content = ""
@@ -136,9 +169,9 @@ def init_usb_hub():
         shout("i2cset -y 0 0x2c 0x07 0x1001 w")
         shout("i2cset -y 0 0x2c 0x08 0x0001 w")
         shout("i2cset -y 0 0x2c 0xff 0x0101 w")
-        print ("Initialized USB hub with Vendor=1234")
+        log_msg ("Initialized USB hub with Vendor=1234")
     else:
-        print ("USB hub was already initialized")
+        log_msg ("USB hub was already initialized")
 
 def start_gps_compass():
     """
@@ -183,53 +216,67 @@ if not os.path.exists(volatile_html):
     os.mkdir(volatile_html)
 
 #need to disable fan for eyesis
+#if switch['eyesis']!=0:
+#    log_msg('Eyesis mode: turn off gpio 10389')
+#    disable_gpio_10389()
+
+# start temperature monitor and let it control fan (set 'off' to disable fan control)
+#Move tempon early, so other problems will not block it
 if switch['eyesis']!=0:
-    print('Eyesis mode: turn off gpio 10389')
+    log_msg('Eyesis mode: turn off gpio 10389')
     disable_gpio_10389()
+    log_msg("Eyesis: fan off")
+    shout("tempmon.py --control_fan off &")
+else:
+    log_msg("Fan on")
+    shout("tempmon.py --control_fan on &")
+
+
+
 
 #0
 if switch['usb_hub']==1:
-    print('Initialize USB hub')
+    log_msg('Initialize USB hub')
     init_usb_hub()
 else:
-    print("skip USB hub initiualization")
+    log_msg("skip USB hub initiualization")
 
 #1
 if switch['ip']==1:
-    print(sys.argv[0]+": ip = "+IPADDR)
+    log_msg(sys.argv[0]+": ip = "+IPADDR)
     init_ipaddr(IPADDR)
 else:
-    print("skip ip")
+    log_msg("skip ip")
     
 #2
 if switch['mcntrl']==1:
-    print(sys.argv[0]+": mcntrl")
+    log_msg(sys.argv[0]+": mcntrl")
     if switch['eyesis']!=0:
         init_mcntrl_eyesis(PYDIR,VERILOG_DIR)
     else:
         init_mcntrl(PYDIR,VERILOG_DIR)
 else:
-    print("skip mcntrl")
+    log_msg("skip mcntrl")
 
 #3
 if switch['imgsrv']==1:
-    print(sys.argv[0]+": imgsrv")
+    log_msg(sys.argv[0]+": imgsrv")
     init_imgsrv(IMGSRV_PORT)
 else:
-    print("skip imgsrv")
+    log_msg("skip imgsrv")
 
 #4
-print(sys.argv[0]+": init ports")
 for i in range(1,5):        
     if switch['port'+str(i)]==1:
         init_port(str(i-1))
     else:
-        print("skip sensor port "+str(i))
+        log_msg("skip sensor port "+str(i))
 
-time.sleep(1)
+
 
 #5
 if (switch['eyesis'] != 0) and (switch['framepars'] != 0):
+    #time.sleep(1)
     for i in range(4):
         sysfs_content = init_port_readsysfs("sensor"+str(i)+"0")
         if sysfs_content=="mt9p006":
@@ -247,14 +294,14 @@ if (switch['eyesis'] != 0) and (switch['framepars'] != 0):
     for i in range(4):
         sysfs_content = init_port_readsysfs("sensor"+str(i)+"0")
         if sysfs_content=="mt9p006":
-            print("AUTOEXP und AUTOWB, channel = "+str(i))
+            log_msg("AUTOEXP und AUTOWB, channel = "+str(i))
             init_other_eyesis(str(i))
             time.sleep(1)
             init_autoexp_eyesis(str(i))
             init_autowb_eyesis(str(i))
     
 else:
-    print(sys.argv[0]+": auto exposure and auto white balance")
+    log_msg(sys.argv[0]+": auto exposure and auto white balance")
     for i in range(1,5):
         if (switch['autoexp_daemon']==1) or (switch['autoexp']==1):
             init_autoexp_daemon(str(i-1))
@@ -264,14 +311,14 @@ else:
                 if sysfs_content=="mt9p006":
                     init_autoexp(str(i-1))
             else:
-                print("Port "+str(i)+": skip autoexp")
+                log_msg("Port "+str(i)+": skip autoexp")
                 
             if switch['autowb']==1:
                 sysfs_content = init_port_readsysfs("sensor"+str(i-1)+"0")
                 if sysfs_content=="mt9p006":
                         init_autowb(str(i-1))
             else:
-                print("Port "+str(i)+": skip autowb")
+                log_msg("Port "+str(i)+": skip autowb")
 if switch ['autocampars'] == 1:
 #   shout("autocampars.php --init --ignore-revision")
     shout("autocampars.php --init")
@@ -284,33 +331,26 @@ if (switch['eyesis'] == 1) and (switch['framepars'] != 0):
     shout("wget -O /dev/null \"localhost/parsedit.php?immediate&sensor_port=1&MULTI_FLIPV=3\"")
 
 #6
-print(sys.argv[0]+" SATA")
 if switch['sata']==1:
+    log_msg("init SATA")
     init_sata(SATA_EN,PYDIR)
 else:
-    print("skip SATA")
+    log_msg("skip SATA")
     
 
 #7
-print(sys.argv[0]+" GPS")
 if switch['gps']==1:
+    log_msg('Start GPS and event logger')
     start_gps_compass()
 else:
-    print("skip GPS")
+    log_msg("skip GPS")
 
 # create directory for camogm pipes, symlink /var/state should already be in rootfs
 
 if not os.path.exists("/var/volatile/state"):
     os.mkdir('/var/volatile/state')
 else:
-    print ("/var/volatile/state already exists")
+    log_msg ("/var/volatile/state already exists")
 
-# start temperature monitor and let it control fan (set 'off' to disable fan control)
-if switch['eyesis']!=0:
-    print("Eyesis: fan off")
-    shout("tempmon.py --control_fan off &")
-else:
-    print("Fan on")
-    shout("tempmon.py --control_fan on &")
     
-print("init_elphel393.py DONE")
+log_msg("DONE, log file: "+LOGFILE)
