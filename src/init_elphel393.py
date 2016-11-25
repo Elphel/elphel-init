@@ -96,12 +96,25 @@ def colorize(string, color, bold):
         attr.append('1')
     return '\x1b[%sm%s\x1b[0m' % (';'.join(attr), string)
 
-def log_msg(msg):
+def log_msg(msg, mode=0):
+    bold = False
+    color = ""
+    if mode == 2: #bold red - error
+        color = "RED"
+        bold = True
+    elif mode == 3: # just bold
+        bold = True
+    elif mode == 4: # just bold
+        bold = True
+        color = "YELLOW" #warning
+            
     with open ('/proc/uptime') as f: 
         t=float(f.read().split()[0])
     with open(LOGFILE,'a') as msg_file:
-        print (colorize("[%8.2f] %s: "%(t, sys.argv[0].split('/')[-1].split('.')[0]),'CYAN',0)+msg)
         print("[%8.2f]  %s"%(t,msg),file=msg_file)
+    if bold or color:
+        msg = colorize(msg,color,bold)    
+    print (colorize("[%8.2f] %s: "%(t, sys.argv[0].split('/')[-1].split('.')[0]),'CYAN',0)+msg)
 
 def shout(cmd):
     #subprocess.call prints to console
@@ -173,14 +186,14 @@ def init_other_eyesis(index):
 def init_sata(sata_en,pydir):
     if (sata_en==1):
         if not get_fpga():
-            log_msg ("Waiting for the FPGA to be programmed to start SATA")
+            log_msg ("Waiting for the FPGA to be programmed to start SATA", 4)
             if not fpga_OK(TIMEOUT):
                 print()
-                log_msg ("Timeout while waiting for the FPGA to be programmed")
+                log_msg ("Timeout while waiting for the FPGA to be programmed", 2)
                 return
             else:
-                print (" Done")
-        shout(pydir+"/x393sata.py")
+                log_msg ("Done waiting for the FPGA", 4)
+        shout(pydir+"/x393sata.py")  # Should be after modprobe? Wait for the FPGA should be before it
         shout("modprobe ahci_elphel &")
         shout("sleep 2")
         shout("echo 1 > /sys/devices/soc0/amba@0/80000000.elphel-ahci/load_module")
@@ -207,14 +220,13 @@ def start_gps_compass():
     Detect GPS and/or compass boards and start them
     """
     if not get_fpga():
-        log_msg ("Waiting for the FPGA to be programmed to start SATA")
+        log_msg ("Waiting for the FPGA to be programmed to start SATA", 4)
         if not fpga_OK(TIMEOUT):
             print()
-            log_msg ("Timeout while waiting for the FPGA to be programmed")
+            log_msg ("Timeout while waiting for the FPGA to be programmed", 2)
             return
         else:
-            print (" Done")
-    
+            log_msg ("Done waiting for the FPGA", 4)
     shout("start_gps_compass.php")
     
 def disable_gpio_10389():
@@ -392,4 +404,4 @@ else:
     log_msg ("/var/volatile/state already exists")
 
     
-log_msg("DONE, log file: "+LOGFILE)
+log_msg("DONE, log file: "+LOGFILE, 3)
