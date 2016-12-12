@@ -372,13 +372,6 @@ else:
 if switch ['autocampars'] == 1:
 #   shout("autocampars.php --init --ignore-revision")
     shout("autocampars.php --init")
-    
-#flips for eyesis head cams
-if (switch['eyesis'] == 1) and (switch['framepars'] != 0):
-    shout("wget -O /dev/null \"localhost/parsedit.php?immediate&sensor_port=3&MULTI_FLIPV=4\"")
-    shout("wget -O /dev/null \"localhost/parsedit.php?immediate&sensor_port=2&MULTI_FLIPV=3\"")
-    shout("wget -O /dev/null \"localhost/parsedit.php?immediate&sensor_port=0&MULTI_FLIPV=4\"")
-    shout("wget -O /dev/null \"localhost/parsedit.php?immediate&sensor_port=1&MULTI_FLIPV=3\"")
 
 #6
 if switch['sata']==1:
