@@ -122,47 +122,13 @@ def shout(cmd):
 
 def init_ipaddr(ip):
     shout("ifconfig eth0 "+ip)
-    
-def init_mcntrl(pydir,verilogdir):
-    shout(pydir+"/test_mcntrl.py @"+verilogdir+"/hargs")
-
-def init_mcntrl_eyesis(pydir,verilogdir):
-    shout(pydir+"/test_mcntrl.py @"+verilogdir+"/hargs-eyesis")
 
 def init_imgsrv(port):
     shout("imgsrv -p "+str(port))
     #restart PHP - it can get errors while opening/mmaping at startup, then some functions fail
     shout("killall lighttpd; /usr/sbin/lighttpd -f /etc/lighttpd.conf")
     shout("/www/pages/exif.php init=/etc/Exif_template.xml")
-
-def init_port(index):
-    
-    sysfs_content = init_port_readsysfs("port_mux"+index)
-    if sysfs_content=="mux10359":
-        init_mux10359(index)
-    else:
-        sysfs_content = init_port_readsysfs("sensor"+index+"0")
-        #Sensor list
-        #1. mt9p006
-        #2. mt9f002
-        #3. ...
-        if (sysfs_content=="mt9p006"):
-            log_msg("Port "+index+": framepars enable")
-            shout("wget -O /dev/null \"localhost/framepars.php?sensor_port="+index+"&cmd=init\"")        
-        else:
-            switch['port'+str(i)] = 0
-            log_msg("Sensor port "+str(i)+": disabled, please check device tree")
-
-def init_port_readsysfs(filename):
-    sysfs_content = ""
-    with open("/sys/devices/soc0/elphel393-detect_sensors@0/"+filename, 'r') as content_file:
-        sysfs_content = content_file.read()
-        sysfs_content = sysfs_content.strip()
-    return sysfs_content
-
-def init_mux10359(index):
-    shout("cat /usr/local/verilog/x359.bit > /dev/sfpgaconfjtag"+index)
-
+            
 def init_autoexp_daemon(index):
     shout("autoexposure -p "+index+" -c 0 -b 0 -d 1 &")
 
@@ -224,17 +190,9 @@ def disable_gpio_10389():
 switch = {
     'usb_hub':1,
     'ip':1,
-    'mcntrl':0,
     'imgsrv':1,
-    'port1':0,
-    'port2':0,
-    'port3':0,
-    'port4':0,
-    'framepars':0,
     'autoexp_daemon':1,
     'autocampars':1,
-    'autoexp':0,
-    'autowb':0,
     'sata':1,
     'gps':1,
     'eyesis':0
