@@ -133,34 +133,40 @@ def init_autoexp_daemon(index):
     shout("autoexposure -p "+index+" -c 0 -b 0 -d 1 &")
 
 def init_sata(sata_en,pydir):
-    if (sata_en==1):
-        if not get_fpga():
-            log_msg ("Waiting for the FPGA to be programmed to start SATA", 4)
-            if not fpga_OK(TIMEOUT):
-                print()
-                log_msg ("Timeout while waiting for the FPGA to be programmed", 2)
-                return
-            else:
-                log_msg ("Done waiting for the FPGA", 4)
-        shout(pydir+"/x393sata.py")  # Should be after modprobe? Wait for the FPGA should be before it
-        shout("modprobe ahci_elphel &")
-        shout("sleep 2")
-        shout("echo 1 > /sys/devices/soc0/amba@0/80000000.elphel-ahci/load_module")
+    if os.path.isfile("/sys/devices/soc0/elphel393-pwr@0/detected_10389"):
+        if (sata_en==1):
+            if not get_fpga():
+                log_msg ("Waiting for the FPGA to be programmed to start SATA", 4)
+                if not fpga_OK(TIMEOUT):
+                    print()
+                    log_msg ("Timeout while waiting for the FPGA to be programmed", 2)
+                    return
+                else:
+                    log_msg ("Done waiting for the FPGA", 4)
+            shout(pydir+"/x393sata.py")  # Should be after modprobe? Wait for the FPGA should be before it
+            shout("modprobe ahci_elphel &")
+            shout("sleep 2")
+            shout("echo 1 > /sys/devices/soc0/amba@0/80000000.elphel-ahci/load_module")
+    else:
+        log_msg ("10389 was not detected: skipping SATA init")
 
 def init_usb_hub():
     """
-    Initializes USB HUB on 10389 board (stays inituialized through reboot, does not respond after initialized)
+    Initializes USB HUB on 10389 board (stays initialized through reboot, does not respond after initialized)
     """
     if not os.path.exists('/sys/bus/usb/devices/1-1'):
-        shout("i2cset -y 0 0x2c 0xff 0x0201 w")
-        shout("i2cset -y 0 0x2c 0xff 0x0001 w")
-        shout("i2cset -y 0 0x2c 0x00 0x3401 w")
-        shout("i2cset -y 0 0x2c 0x01 0x1201 w")
-        shout("i2cset -y 0 0x2c 0x06 0x9b01 w")
-        shout("i2cset -y 0 0x2c 0x07 0x1001 w")
-        shout("i2cset -y 0 0x2c 0x08 0x0001 w")
-        shout("i2cset -y 0 0x2c 0xff 0x0101 w")
-        log_msg ("Initialized USB hub with Vendor=1234")
+        if os.path.isfile('/sys/devices/soc0/elphel393-pwr@0/detected_10389'):
+            shout("i2cset -y 0 0x2c 0xff 0x0201 w")
+            shout("i2cset -y 0 0x2c 0xff 0x0001 w")
+            shout("i2cset -y 0 0x2c 0x00 0x3401 w")
+            shout("i2cset -y 0 0x2c 0x01 0x1201 w")
+            shout("i2cset -y 0 0x2c 0x06 0x9b01 w")
+            shout("i2cset -y 0 0x2c 0x07 0x1001 w")
+            shout("i2cset -y 0 0x2c 0x08 0x0001 w")
+            shout("i2cset -y 0 0x2c 0xff 0x0101 w")
+            log_msg ("Initialized USB hub with Vendor=1234")
+        else:
+            log_msg ("10389 was not detected: skipping USB hub init")
     else:
         log_msg ("USB hub was already initialized")
 
@@ -249,7 +255,7 @@ else:
     log_msg("skip imgsrv")
 
 #5
-log_msg(sys.argv[0]+": auto exposure and auto white balance")
+log_msg(sys.argv[0]+": auto exposure daemon")
 if switch['autoexp_daemon']==1:
     for i in range(1,5):
         init_autoexp_daemon(str(i-1))
