@@ -1,36 +1,36 @@
 #!/usr/bin/env python
 from __future__ import division
 from __future__ import print_function
+
+''' 
+/**
+ * @file init_elphel393.py
+ * @brief 10393 related init script
+ * @copyright Copyright (C) 2016 Elphel Inc.
+ * @author Oleg Dzhimiev <oleg@elphel.com>
+ * @deffield updated: unknown
+ *
+ * @par <b>License</b>:
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
 '''
-# Copyright (C) 2016, Elphel.inc.
-# Usage: known
-#
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http:#www.gnu.org/licenses/>.
 
-@author:     Oleg K Dzhimiev
-@copyright:  2016 Elphel, Inc.
-@license:    GPLv3.0+
-@contact:    oleg@elphel.com
-@deffield    updated: unknown
-
-'''
-
-__author__ = "Elphel"
-__copyright__ = "Copyright 2016, Elphel, Inc."
+__author__ = "Oleg Dzhimiev"
+__copyright__ = "Copyright (C) 2016 Elphel Inc."
 __license__ = "GPL"
 __version__ = "3.0+"
-__maintainer__ = "Oleg K Dzhimiev"
+__maintainer__ = "Oleg Dzhimiev"
 __email__ = "oleg@elphel.com"
 __status__ = "Development"
 
