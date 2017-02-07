@@ -42,6 +42,7 @@ import os
 #params
 SENSOR_TYPE = 5
 IPADDR = "192.168.0.9"
+NETMASK = "255.255.255.0"
 IMGSRV_PORT = 2323
 CAMOGM_PORT = 3456
 CAMOGM_PIPE = "/var/volatile/camogm_cmd"
@@ -120,8 +121,8 @@ def shout(cmd):
     #subprocess.call prints to console
     subprocess.call(cmd,shell=True)
 
-def init_ipaddr(ip):
-    shout("ifconfig eth0 "+ip)
+def init_ipaddr(ip, mask):
+    shout("ifconfig eth0 "+ip+" netmask "+mask)
 
 def init_imgsrv(port):
     shout("imgsrv -p "+str(port))
@@ -240,8 +241,8 @@ else:
 
 #1
 if switch['ip']==1:
-    log_msg(sys.argv[0]+": ip = "+IPADDR)
-    init_ipaddr(IPADDR)
+    log_msg(sys.argv[0]+": ip = "+IPADDR+", mask = "+NETMASK)
+    init_ipaddr(IPADDR, NETMASK)
 else:
     log_msg("skip ip")
     
