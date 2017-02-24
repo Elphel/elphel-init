@@ -146,6 +146,7 @@ def init_sata(sata_en,pydir):
                     log_msg ("Done waiting for the FPGA", 4)
             shout(pydir+"/x393sata.py")  # Should be after modprobe? Wait for the FPGA should be before it
             # the default connection is zynq <-> internal ssd 
+            shout(pydir+"/x393sata_control.py set_zynq_ssd")
             # uncomment the line below for zynq <-> external ssd connection at boot
             # shout(pydir+"/x393sata_control.py set_zynq_esata")
             shout("modprobe ahci_elphel &")
