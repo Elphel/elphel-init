@@ -41,7 +41,7 @@ import os
 
 #params
 SENSOR_TYPE = 5
-IPADDR = "192.168.0.9"
+IPADDR = "192.168.0.8"
 NETMASK = "255.255.255.0"
 IMGSRV_PORT = 2323
 CAMOGM_PORT = 3456
@@ -133,25 +133,38 @@ def init_imgsrv(port):
 def init_autoexp_daemon(index):
     shout("autoexposure -p "+index+" -c 0 -b 0 -d 1 &")
 
-def init_sata(sata_en,pydir):
+def init_sata(sata_en):
     if os.path.isfile("/sys/devices/soc0/elphel393-pwr@0/detected_10389"):
         if (sata_en==1):
             if not get_fpga():
                 log_msg ("Waiting for the FPGA to be programmed to start SATA", 4)
                 if not fpga_OK(TIMEOUT):
-                    print()
                     log_msg ("Timeout while waiting for the FPGA to be programmed", 2)
                     return
                 else:
                     log_msg ("Done waiting for the FPGA", 4)
-            shout(pydir+"/x393sata.py")  # Should be after modprobe? Wait for the FPGA should be before it
-            # the default connection is zynq <-> internal ssd 
-            shout(pydir+"/x393sata_control.py set_zynq_ssd")
-            # uncomment the line below for zynq <-> external ssd connection at boot
-            # shout(pydir+"/x393sata_control.py set_zynq_esata")
-            shout("modprobe ahci_elphel &")
-            shout("sleep 2")
-            shout("echo 1 > /sys/devices/soc0/amba@0/80000000.elphel-ahci/load_module")
+                    
+            # default init will connect to internal SSD
+            shout(PYDIR+"/x393sata.py")  # Should be after modprobe? Wait for the FPGA should be before it
+            
+            # for Eyesis4Pi (temporary fix)
+            if switch['eyesis']!=0:
+              
+              log_msg ("Setting VSC3304 for Eyesis4Pi (driver will be loaded)", 4)
+              log_msg ("  Details : /var/log/x393sata_eyesis4pi.log")
+              log_msg ("  State   : /var/state/ssd")
+              
+              # Option 1: use internal SSDs: zynq <-> internal ssd
+              # uncomment for use
+              #shout(PYDIR+"/x393sata_eyesis4pi_control.py set_zynq_ssd")
+              
+              # Option 2: use external SSDs: zynq <-> external ssd
+              # uncomment for use
+              shout(PYDIR+"/x393sata_eyesis4pi_control.py set_zynq_esata")
+            else:
+              shout("modprobe ahci_elphel &")
+              shout("sleep 2")
+              shout("echo 1 > /sys/devices/soc0/amba@0/80000000.elphel-ahci/load_module")
     else:
         log_msg ("10389 was not detected: skipping SATA init")
 
@@ -272,7 +285,7 @@ if switch ['autocampars'] == 1:
 #6
 if switch['sata']==1:
     log_msg("init SATA")
-    init_sata(SATA_EN,PYDIR)
+    init_sata(SATA_EN)
 else:
     log_msg("skip SATA")
     
