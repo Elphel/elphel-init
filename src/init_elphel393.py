@@ -151,16 +151,16 @@ def init_sata(sata_en):
             if switch['eyesis']!=0:
               
               log_msg ("Setting VSC3304 for Eyesis4Pi (driver will be loaded)", 4)
-              log_msg ("  Details : /var/log/x393sata_eyesis4pi.log")
+              log_msg ("  Details : /var/log/x393sata_control.log")
               log_msg ("  State   : /var/state/ssd")
               
               # Option 1: use internal SSDs: zynq <-> internal ssd
               # uncomment for use
-              #shout(PYDIR+"/x393sata_eyesis4pi_control.py set_zynq_ssd")
+              #shout(PYDIR+"/x393sata_control.py set_zynq_ssd")
               
               # Option 2: use external SSDs: zynq <-> external ssd
               # uncomment for use
-              shout(PYDIR+"/x393sata_eyesis4pi_control.py set_zynq_esata")
+              shout(PYDIR+"/x393sata_control.py set_zynq_esata")
             else:
               shout("modprobe ahci_elphel &")
               shout("sleep 2")
