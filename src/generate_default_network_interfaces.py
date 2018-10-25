@@ -31,7 +31,7 @@ from __future__ import print_function
 '''
 
 __copyright__ = "Copyright (C) 2018 Elphel, Inc."
-__license__ = "GPL-3.0+"
+__license__ = "GPL-3.0-or-later"
 __maintainer__ = "Oleg Dzhimiev"
 __email__ = "oleg@elphel.com"
 
