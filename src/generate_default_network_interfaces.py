@@ -35,10 +35,22 @@ __license__ = "GPL-3.0+"
 __maintainer__ = "Oleg Dzhimiev"
 __email__ = "oleg@elphel.com"
 
+'''
+Usage (command line):
+  ~$ generate_default_network_interfaces.py <ipaddr> <netmask> <gateway>
+Example:
+  ~$ generate_default_network_interfaces.py 192.168.0.9 255.255.255.0 192.168.0.15
+'''
+
 import os
+import sys
 
 path = "generated"
 filepath = os.path.join(path,"interfaces")
+
+ip      = "192.168.0.9"
+mask    = "255.255.255.0"
+gateway = "192.168.0.15"
 
 # in python 3 it's a single line:
 #     os.makedirs(path, exist_ok=True)
@@ -48,9 +60,20 @@ except OSError:
   if not os.path.isdir(path):
     raise
 
-ip      = "192.168.0.9"
-mask    = "255.255.255.0"
-gateway = "192.168.0.15"
+try:
+  ip = sys.argv[1]
+except:
+  pass
+
+try:
+  mask = sys.argv[2]
+except:
+  pass
+
+try:
+  gateway = sys.argv[3]
+except:
+  pass
 
 with open(filepath,"w") as f:
     f.write("""\
