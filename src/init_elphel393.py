@@ -204,9 +204,10 @@ def init_sata(sata_en):
               shout(PYDIR+"/x393sata_control.py set_zynq_esata")
             else:
               # load the AHCI driver module
-              shout("modprobe ahci_elphel &")
-              shout("sleep 2")
-              shout("echo 1 > /sys/devices/soc0/amba@0/80000000.elphel-ahci/load_module")
+              #shout("modprobe ahci_elphel &")
+              #shout("sleep 2")
+              #shout("echo 1 > /sys/devices/soc0/amba@0/80000000.elphel-ahci/load_module")
+              shout(PYDIR+"/x393sata_control.py set_zynq_ssd")
     else:
         log_msg ("10389 was not detected: skipping SATA init")
 
