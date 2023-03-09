@@ -157,7 +157,7 @@ def init_imgsrv(port):
     '''   
     shout("imgsrv -p "+str(port))
     #restart PHP - it can get errors while opening/mmaping at startup, then some functions fail
-    shout("killall lighttpd; /usr/sbin/lighttpd -f /etc/lighttpd.conf")
+    shout("killall lighttpd; /usr/sbin/lighttpd -f /etc/lighttpd/lighttpd.conf")
     shout("/www/pages/exif.php init=/etc/Exif_template.xml")
             
 def init_autoexp_daemon(index):
@@ -243,7 +243,8 @@ def start_gps_compass():
             return
         else:
             log_msg ("Done waiting for the FPGA", 4)
-    shout("start_gps_compass.php")
+#   shout("start_gps_compass.php")
+    shout("start_ims.php")
     
 def disable_gpio_10389():
     '''

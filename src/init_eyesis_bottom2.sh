@@ -31,7 +31,7 @@ $PYDIR/test_mcntrl.py @${VERILOG_DIR}/hargs-eyesis
 echo imgsrv -p 2323
 imgsrv -p 2323
 #restart PHP - it can get errors while opening/mmaping at startup, then some functions fail
-killall lighttpd; /usr/sbin/lighttpd -f /etc/lighttpd.conf
+killall lighttpd; /usr/sbin/lighttpd -f /etc/lighttpd/lighttpd.conf
 /www/pages/exif.php init=/etc/Exif_template.xml
 #echo "TURN 10359 power in the next 10 seconds"
 #sleep 10
